@@ -26,7 +26,7 @@ const print = std.debug.print;
 //     defer glfw.makeContextCurrent(null);
 //
 //     main_loop: while (true) {
-//         glfw.waitEvents();
+//          glfw.waitEvents();
 //         if (window.?.shouldClose()) break :main_loop;
 //
 //         window.?.swapBuffers();
@@ -38,9 +38,22 @@ pub fn main() !void {
     _ = argIter.next();
     const inputFileName = argIter.next();
     if (inputFileName == null) return error.NoInputFile;
-    print("{?s}\n", .{inputFileName});
     if (argIter.next()) |arg| {
         _ = arg;
         return error.MultipleInputFileError;
+    }
+    // at this point the command line arguement is narrowed down to one word.
+
+    // now focus on opening and editing the existing file.
+    const file = try std.fs.cwd().openFile(inputFileName.?, .{});
+    defer file.close();
+
+    var bufReader = std.io.bufferedReader(file.reader());
+    var inStream = bufReader.reader();
+
+    // put all file content into a data structure...
+    var buf: [1024]u8 = undefined;
+    while (try inStream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
+        print("{s}\n", .{line});
     }
 }
