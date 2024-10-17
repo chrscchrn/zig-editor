@@ -23,9 +23,9 @@
     // Once all dependencies are fetched, `zig build` no longer requires
     // internet connectivity.
     .dependencies = .{
-        .@"zig-glfw" = .{
-            .url = "git+https://github.com/chrscchrn/zig-glfw#b904267215a7b39744356bbb8f8f0321f33afcff",
-            .hash = "12209c05d583a97f9ef830926861c7111ae8fe8c123d4bbe2a53dfe948a010e870ef",
+        .@"my-zig-glfw" = .{
+            .url = "https://github.com/chrscchrn/zig-glfw/archive/refs/tags/zig.pre-0.13.0.tar.gz",
+            .hash = "1220d52f7a516eb95ae94de02ef76df4ac2e2aec04f8aa2fb5279405a8b13c08a4eb",
         },
     },
     .paths = .{

@@ -8,8 +8,10 @@ will need:
 Usage:
 > I want to be able to execute by
 ```
-zig run text-editor file.txt
+./zeditor file.txt
 ```
 
+should be able to type the command and 1 file to edit (create later)
+window opens, text inside, cursor can move around, delete or add chars
 
 

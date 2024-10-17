@@ -1,5 +1,5 @@
 const std = @import("std");
-const glfw = @import("zig-glfw");
+const glfw = @import("my-zig-glfw");
 
 const glfw_log = std.log.scoped(.glfw);
 
@@ -9,13 +9,38 @@ fn logGLFWError(error_code: glfw.ErrorCode, description: [:0]const u8) void {
 
 const print = std.debug.print;
 
+// pub fn main() !void {
+//     print("program run\n", .{});
+//     glfw.setErrorCallback(logGLFWError);
+//     // GLFW setup
+//     if (!glfw.init(.{})) {
+//         glfw_log.err("failed to initialize GLFW: {?s}", .{glfw.getErrorString()});
+//         return error.GLFWInitFailed;
+//     }
+//     defer glfw.terminate();
+//
+//     const window = glfw.Window.create(1920, 1080, "editor made with zig", null, null, .{});
+//     defer window.?.destroy();
+//
+//     glfw.makeContextCurrent(window);
+//     defer glfw.makeContextCurrent(null);
+//
+//     main_loop: while (true) {
+//         glfw.waitEvents();
+//         if (window.?.shouldClose()) break :main_loop;
+//
+//         window.?.swapBuffers();
+//     }
+// }
+
 pub fn main() !void {
-    print("program run\n", .{});
-    glfw.setErrorCallback(logGLFWError);
-    // GLFW setup
-    if (!glfw.init(.{})) {
-        glfw_log.err("failed to initialize GLFW: {?s}", .{glfw.getErrorString()});
-        return error.GLFWInitFailed;
+    var argIter = std.process.args();
+    _ = argIter.next();
+    const inputFileName = argIter.next();
+    if (inputFileName == null) return error.NoInputFile;
+    print("{?s}\n", .{inputFileName});
+    if (argIter.next()) |arg| {
+        _ = arg;
+        return error.MultipleInputFileError;
     }
-    defer glfw.terminate();
 }

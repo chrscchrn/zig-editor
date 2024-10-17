@@ -11,11 +11,11 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const glfw_dep = b.dependency("zig-glfw", .{
+    const glfw_dep = b.dependency("my-zig-glfw", .{
         .target = target,
         .optimize = optimize,
     });
-    exe.root_module.addImport("zig-glfw", glfw_dep.module("zig-glfw"));
+    exe.root_module.addImport("my-zig-glfw", glfw_dep.module("my-zig-glfw"));
 
     b.installArtifact(exe);
 
