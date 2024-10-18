@@ -9,31 +9,35 @@ fn logGLFWError(error_code: glfw.ErrorCode, description: [:0]const u8) void {
 
 const print = std.debug.print;
 
-// pub fn main() !void {
-//     print("program run\n", .{});
-//     glfw.setErrorCallback(logGLFWError);
-//     // GLFW setup
-//     if (!glfw.init(.{})) {
-//         glfw_log.err("failed to initialize GLFW: {?s}", .{glfw.getErrorString()});
-//         return error.GLFWInitFailed;
-//     }
-//     defer glfw.terminate();
-//
-//     const window = glfw.Window.create(1920, 1080, "editor made with zig", null, null, .{});
-//     defer window.?.destroy();
-//
-//     glfw.makeContextCurrent(window);
-//     defer glfw.makeContextCurrent(null);
-//
-//     main_loop: while (true) {
-//          glfw.waitEvents();
-//         if (window.?.shouldClose()) break :main_loop;
-//
-//         window.?.swapBuffers();
-//     }
-// }
-
 pub fn main() !void {
+    glfw.setErrorCallback(logGLFWError);
+    // GLFW setup
+    if (!glfw.init(.{})) {
+        glfw_log.err("failed to initialize GLFW: {?s}", .{glfw.getErrorString()});
+        return error.GLFWInitFailed;
+    }
+    defer glfw.terminate();
+
+    const window = glfw.Window.create(1920, 1080, "editor made with zig", null, null, .{});
+    defer window.?.destroy();
+
+    glfw.makeContextCurrent(window);
+    defer glfw.makeContextCurrent(null);
+
+    const fileName = try processArg();
+    const allocator = std.heap.page_allocator;
+    const buff = try readFile(allocator, fileName);
+    defer allocator.free(buff);
+    print("{s}", .{buff});
+    main_loop: while (true) {
+        glfw.waitEvents();
+        if (window.?.shouldClose()) break :main_loop;
+
+        window.?.swapBuffers();
+    }
+}
+
+fn processArg() ![]const u8 {
     var argIter = std.process.args();
     _ = argIter.next();
     const inputFileName = argIter.next();
@@ -42,18 +46,15 @@ pub fn main() !void {
         _ = arg;
         return error.MultipleInputFileError;
     }
-    // at this point the command line arguement is narrowed down to one word.
+    return inputFileName.?;
+}
 
-    // now focus on opening and editing the existing file.
-    const file = try std.fs.cwd().openFile(inputFileName.?, .{});
+fn readFile(allocator: std.mem.Allocator, fileName: []const u8) ![]u8 {
+    const file = try std.fs.cwd().openFile(
+        fileName,
+        .{},
+    );
     defer file.close();
-
-    var bufReader = std.io.bufferedReader(file.reader());
-    var inStream = bufReader.reader();
-
-    // put all file content into a data structure...
-    var buf: [1024]u8 = undefined;
-    while (try inStream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
-        print("{s}\n", .{line});
-    }
+    const stat = try file.stat();
+    return try file.readToEndAlloc(allocator, stat.size);
 }
