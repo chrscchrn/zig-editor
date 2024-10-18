@@ -27,11 +27,16 @@
             .url = "https://github.com/chrscchrn/zig-glfw/archive/refs/tags/zig.pre-0.13.0.tar.gz",
             .hash = "1220d52f7a516eb95ae94de02ef76df4ac2e2aec04f8aa2fb5279405a8b13c08a4eb",
         },
+        .zigglgen = .{
+            .url = "git+https://github.com/chrscchrn/zigglgen/#33ee1647f577e057ca05dac568101a0f42e590a1",
+            .hash = "1220c68f8d7e4d24baaa40da9e91b7e480b5ef41489ee147fe535de4d54195ae5c62",
+        },
     },
     .paths = .{
         "build.zig",
         "build.zig.zon",
         "src",
+        "main.zig",
         // For example...
         //"LICENSE",
         //"README.md",

@@ -17,6 +17,13 @@ pub fn build(b: *std.Build) void {
     });
     exe.root_module.addImport("my-zig-glfw", glfw_dep.module("my-zig-glfw"));
 
+    const gl_bindings = @import("zigglgen").generateBindingsModule(b, .{
+        .api = .gl,
+        .profile = .core,
+        .version = .@"4.6",
+    });
+    exe.root_module.addImport("gl", gl_bindings);
+
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);

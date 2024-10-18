@@ -1,5 +1,6 @@
 const std = @import("std");
 const glfw = @import("my-zig-glfw");
+const gl = @import("gl");
 
 const glfw_log = std.log.scoped(.glfw);
 
@@ -7,9 +8,14 @@ fn logGLFWError(error_code: glfw.ErrorCode, description: [:0]const u8) void {
     glfw_log.err("{}: {s}\n", .{ error_code, description });
 }
 
-// fn keyCallback(window: *glfw.Window, key: glfw.Key, scancode: i32, action: glfw.Action, mods: glfw.Mods) void {
-//     print("bool");
-// }
+fn keyCallback(window: glfw.Window, key: glfw.Key, scancode: i32, action: glfw.Action, mods: glfw.Mods) void {
+    if (key == glfw.Key.escape and action == glfw.Action.press) window.setShouldClose(true);
+    _ = scancode;
+    _ = mods;
+}
+
+fn terminateProgram() void {}
+
 fn characterCallback(window: glfw.Window, codepoint: u21) void {
     _ = window;
     print("{u}", .{codepoint});
@@ -35,10 +41,10 @@ pub fn main() !void {
     const allocator = std.heap.page_allocator;
     const buff = try readFile(allocator, fileName);
     defer allocator.free(buff);
-    print("{s}", .{buff});
+    print("\n        File Contents:\n    ----------------------\n{s}", .{buff});
 
-    // input
-    // window.?.setKeyCallback(comptime callback: ?fn(window:Window, key:Key, scancode:i32, action:Action, mods:Mods)void)
+    // Keyboard input
+    window.setKeyCallback(keyCallback);
     window.setCharCallback(characterCallback);
 
     main_loop: while (true) {
