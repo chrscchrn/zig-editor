@@ -7,6 +7,14 @@ fn logGLFWError(error_code: glfw.ErrorCode, description: [:0]const u8) void {
     glfw_log.err("{}: {s}\n", .{ error_code, description });
 }
 
+// fn keyCallback(window: *glfw.Window, key: glfw.Key, scancode: i32, action: glfw.Action, mods: glfw.Mods) void {
+//     print("bool");
+// }
+fn characterCallback(window: glfw.Window, codepoint: u21) void {
+    _ = window;
+    print("{u}", .{codepoint});
+}
+
 const print = std.debug.print;
 
 pub fn main() !void {
@@ -17,8 +25,8 @@ pub fn main() !void {
         return error.GLFWInitFailed;
     }
     defer glfw.terminate();
-    const window = glfw.Window.create(1920, 1080, "editor made with zig", null, null, .{});
-    defer window.?.destroy();
+    const window = glfw.Window.create(1920, 1080, "Zeditor", null, null, .{}) orelse unreachable;
+    defer window.destroy();
     glfw.makeContextCurrent(window);
     defer glfw.makeContextCurrent(null);
 
@@ -29,11 +37,15 @@ pub fn main() !void {
     defer allocator.free(buff);
     print("{s}", .{buff});
 
+    // input
+    // window.?.setKeyCallback(comptime callback: ?fn(window:Window, key:Key, scancode:i32, action:Action, mods:Mods)void)
+    window.setCharCallback(characterCallback);
+
     main_loop: while (true) {
         glfw.waitEvents();
-        if (window.?.shouldClose()) break :main_loop;
+        if (window.shouldClose()) break :main_loop;
 
-        window.?.swapBuffers();
+        window.swapBuffers();
     }
 }
 
