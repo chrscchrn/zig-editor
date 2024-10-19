@@ -1,6 +1,6 @@
 const std = @import("std");
 const glfw = @import("my-zig-glfw");
-const gl = @import("gl");
+const gl = @import("zgl");
 const freetype = @import("mach-freetype");
 const harfbuzz = @import("mach-harfbuzz");
 const fonts = @import("zig-fonts");
@@ -10,8 +10,9 @@ const glfw_log = std.log.scoped(.glfw);
 const screenWidth = 1920;
 const screenHeight = 1080;
 
-const gl_procs: gl.ProcTable = undefined;
+const print = std.debug.print;
 
+// CallBack Functions
 fn logGLFWError(error_code: glfw.ErrorCode, description: [:0]const u8) void {
     glfw_log.err("{}: {s}\n", .{ error_code, description });
 }
@@ -30,7 +31,28 @@ fn characterCallback(window: glfw.Window, codepoint: u21) void {
     print("{u}", .{codepoint});
 }
 
-const print = std.debug.print;
+fn getProcAddress(p: glfw.GLProc, proc: [:0]const u8) ?gl.binding.FunctionPointer {
+    _ = p;
+    return glfw.getProcAddress(proc);
+}
+
+// data types
+const Character = struct {
+    textureID: c_uint,
+    size: Size,
+    bearing: Bearing,
+    advance: c_long,
+};
+
+const Size = struct {
+    x: u32,
+    y: u32,
+};
+
+const Bearing = struct {
+    x: i32,
+    y: i32,
+};
 
 pub fn main() !void {
     // glfw
@@ -42,56 +64,84 @@ pub fn main() !void {
     defer glfw.terminate();
 
     const window = glfw.Window.create(screenWidth, screenHeight, "Zeditor", null, null, .{
-        .context_version_major = gl.info.version_major,
-        .context_version_minor = gl.info.version_minor,
+        .context_version_major = 4,
+        .context_version_minor = 6,
         .opengl_profile = .opengl_core_profile,
-        // .opengl_forward_compat = gl.info.api == .gl,
     }) orelse unreachable;
     defer window.destroy();
 
     glfw.makeContextCurrent(window);
     defer glfw.makeContextCurrent(null);
 
-    // if (!gl_procs.init(@constCast(glfw.getProcAddress))) return error.InitFailed;
-    if (!gl_procs.init(@as(?gl.PROC, glfw.getProcAddress))) return error.InitFailed;
+    const proc: glfw.GLProc = undefined;
+    try gl.binding.load(proc, getProcAddress);
 
-    // arg input and open file to buff
+    // Process arg input, open file
     const fileName = try processArg();
-    const allocator = std.heap.page_allocator;
-    const buff = try readFile(allocator, fileName);
-    defer allocator.free(buff);
+    const fileAlloc = std.heap.page_allocator;
+    const buff = try readFile(fileAlloc, fileName);
+    defer fileAlloc.free(buff);
     print("\n        File Contents:\n    ----------------------\n{s}", .{buff});
 
     // Keyboard input
     window.setKeyCallback(keyCallback);
     window.setCharCallback(characterCallback);
 
-    // Freetype init
+    // Freetype Init
     const ft = try freetype.Library.init();
     defer ft.deinit();
-
     const face = try ft.createFaceMemory(fonts.jetbrains_mono, 0);
+    defer face.deinit();
     try face.setCharSize(0, 16 * 64, 120, 0);
-    try face.loadChar('R', .{ .render = true });
-    _ = face.glyph().bitmap();
 
-    // for (0..129) |i| {
-    //     try face.loadChar(@as(u32, @intCast(i)), .{ .render = true });
-    //     var texture: c_uint = undefined;
-    //     gl.GenTextures(1, @ptrCast(&texture));
-    //     gl.BindTexture(gl.TEXTURE_2D, texture);
-    //     gl.TexImage2D(
-    //         gl.TEXTURE_2D,
-    //         0,
-    //         gl.RED,
-    //         @as(c_int, @intCast(face.glyph().bitmap().width())),
-    //         @as(c_int, @intCast(face.glyph().bitmap().rows())),
-    //         0,
-    //         gl.RED,
-    //         gl.UNSIGNED_BYTE,
-    //         @ptrCast(face.glyph().bitmap().buffer()),
-    //     );
-    // }
+    var charArray = [_]Character{undefined} ** 128;
+    // const charAlloc = std.heap.page_allocator;
+    // var charMap = std.AutoHashMap(u32, Character).init(charAlloc);
+    // defer charAlloc.free(charMap);
+    for (0..128) |i| {
+        const charCode = @as(u32, @intCast(i));
+        try face.loadChar(charCode, .{ .render = true });
+        var texture: c_uint = undefined;
+        gl.binding.genTextures(
+            1,
+            @ptrCast(&texture),
+        );
+        gl.binding.bindTexture(
+            gl.binding.TEXTURE_2D,
+            texture,
+        );
+        gl.binding.texImage2D(
+            gl.binding.TEXTURE_2D,
+            0,
+            gl.binding.RED,
+            @as(c_int, @intCast(face.glyph().bitmap().width())),
+            @as(c_int, @intCast(face.glyph().bitmap().rows())),
+            0,
+            gl.binding.RED,
+            gl.binding.UNSIGNED_BYTE,
+            @ptrCast(face.glyph().bitmap().buffer()),
+        );
+        gl.binding.texParameteri(gl.binding.TEXTURE_2D, gl.binding.TEXTURE_WRAP_S, gl.binding.CLAMP_TO_EDGE);
+        gl.binding.texParameteri(gl.binding.TEXTURE_2D, gl.binding.TEXTURE_WRAP_T, gl.binding.CLAMP_TO_EDGE);
+        gl.binding.texParameteri(gl.binding.TEXTURE_2D, gl.binding.TEXTURE_MIN_FILTER, gl.binding.LINEAR);
+        gl.binding.texParameteri(gl.binding.TEXTURE_2D, gl.binding.TEXTURE_MAG_FILTER, gl.binding.LINEAR);
+
+        // try charMap.put(charCode, Character{
+        //     .textureID = texture,
+        //     .size = .{ .x = face.glyph().bitmap().width(), .y = face.glyph().bitmap().rows() },
+        //     .bearing = .{ .x = face.glyph().bitmapLeft(), .y = face.glyph().bitmapTop() },
+        //     .advance = face.glyph().advance().x,
+        // });
+        charArray[i] = Character{
+            .textureID = texture,
+            .size = .{ .x = face.glyph().bitmap().width(), .y = face.glyph().bitmap().rows() },
+            .bearing = .{ .x = face.glyph().bitmapLeft(), .y = face.glyph().bitmapTop() },
+            .advance = face.glyph().advance().x,
+        };
+    }
+    gl.binding.pixelStorei(gl.binding.UNPACK_ALIGNMENT, 1);
+
+    // Shaders
 
     main_loop: while (true) {
         glfw.waitEvents();

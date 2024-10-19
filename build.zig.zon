@@ -27,10 +27,6 @@
             .url = "https://github.com/chrscchrn/zig-glfw/archive/refs/tags/zig.pre-0.13.0.tar.gz",
             .hash = "1220d52f7a516eb95ae94de02ef76df4ac2e2aec04f8aa2fb5279405a8b13c08a4eb",
         },
-        .zigglgen = .{
-            .url = "git+https://github.com/chrscchrn/zigglgen/#33ee1647f577e057ca05dac568101a0f42e590a1",
-            .hash = "1220c68f8d7e4d24baaa40da9e91b7e480b5ef41489ee147fe535de4d54195ae5c62",
-        },
         .mach_freetype = .{
             .url = "git+https://github.com/hexops/mach-freetype#dd5e749e40f08a40bed251a5ae6233308cd07e0d",
             .hash = "12209b2055d213076fa0476de11c5eae1ad5b6fb91789e6bf218686b8f5f4a4114de",
@@ -38,6 +34,10 @@
         .@"zig-fonts" = .{
             .url = "git+https://github.com/chrscchrn/zig-fonts#459da9a99364e07d66d59968e896802e1cc58f79",
             .hash = "122059a2b55750f2646b86a6d86cfb3d8a4a56d224584ac65707b4f54d9c1c516f45",
+        },
+        .zgl = .{
+            .url = "git+https://github.com/chrscchrn/zgl#876f69eb1e48e70b2a0149ee89868df074e4eed4",
+            .hash = "12202cbadfb8c2396659f52f6ff3dbdd2a99fed9427cf0f27f94f04663f41b71d8a1",
         },
     },
     .paths = .{
