@@ -31,6 +31,14 @@
             .url = "git+https://github.com/chrscchrn/zigglgen/#33ee1647f577e057ca05dac568101a0f42e590a1",
             .hash = "1220c68f8d7e4d24baaa40da9e91b7e480b5ef41489ee147fe535de4d54195ae5c62",
         },
+        .mach_freetype = .{
+            .url = "git+https://github.com/hexops/mach-freetype#dd5e749e40f08a40bed251a5ae6233308cd07e0d",
+            .hash = "12209b2055d213076fa0476de11c5eae1ad5b6fb91789e6bf218686b8f5f4a4114de",
+        },
+        .@"zig-fonts" = .{
+            .url = "git+https://github.com/chrscchrn/zig-fonts#459da9a99364e07d66d59968e896802e1cc58f79",
+            .hash = "122059a2b55750f2646b86a6d86cfb3d8a4a56d224584ac65707b4f54d9c1c516f45",
+        },
     },
     .paths = .{
         "build.zig",

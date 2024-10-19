@@ -26,6 +26,16 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(exe);
 
+    const freeType = b.dependency("mach_freetype", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    exe.root_module.addImport("mach-freetype", freeType.module("mach-freetype"));
+    exe.root_module.addImport("mach-harfbuzz", freeType.module("mach-harfbuzz"));
+    if (b.lazyDependency("zig-fonts", .{})) |fonts| {
+        exe.root_module.addImport("zig-fonts", fonts.module("zig-fonts"));
+    }
+
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
 
